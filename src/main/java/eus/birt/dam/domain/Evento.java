@@ -16,9 +16,9 @@ import lombok.Data;
 @Data
 @AllArgsConstructor
 @Generated("jsonschema2pojo")
-@Document(collection="kulturklikData")
+@Document(collection="kulturklik")
 
-public class Kulturklik {
+public class Evento {
 	
 	@JsonProperty("_id")
 	private String id;
