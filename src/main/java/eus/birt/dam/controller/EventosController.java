@@ -1,6 +1,5 @@
 package eus.birt.dam.controller;
 
-import java.io.Console;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -13,6 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -28,8 +28,9 @@ public class EventosController {
 	@Autowired
 	EventoRepository eventoRepository;
 
+
 	/**
-	 * Endpoint principal de eventos culturales en Euskadi y Nafarroa.
+	 * Endpoint de todos los eventos culturales en Euskadi y Nafarroa.
 	 * 
 	 * @return
 	 */
@@ -44,6 +45,11 @@ public class EventosController {
 		}
 	}
 
+	/**
+	 * Endpoint que nos proprciona las provincias en las que hay eventos
+	 * 
+	 * @return
+	 */
 	@GetMapping("/provincias")
 	public ResponseEntity<List<String>> getAllTerritories() {
 		try {
@@ -64,6 +70,11 @@ public class EventosController {
 		}
 	}
 
+	/**
+	 * Endpoint que nos proporciona todos los tipos de eventos que hay
+	 * 
+	 * @return
+	 */
 	@GetMapping("/tipos")
 	public ResponseEntity<List<String>> getAllEventtypes() {
 		try {
@@ -81,13 +92,18 @@ public class EventosController {
 		}
 	}
 
-	@GetMapping("/amurrio")
-	public ResponseEntity<List<Evento>> getAmurrioEvent() {
+	/**
+	 * Endpoint que nos proporciona la lista de evento que hay en Ermua
+	 * 
+	 * @return
+	 */
+	@GetMapping("/ermua")
+	public ResponseEntity<List<Evento>> getErmuaEvent() {
 		try {
 			List<Evento> eventos = eventoRepository.findAll();
 			List<Evento> eventosAmurrio = new ArrayList<Evento>();
 			for (Evento evento : eventos) {
-				if (evento.getProperties().getMunicipality().equals("Amurrio")) {
+				if (evento.getProperties().getMunicipality().equals("Ermua")) {
 					System.out.println("##########################################");
 					System.out.println(evento.getProperties().getDocumentname());
 					System.out.println(evento.getProperties().getEventtype());
@@ -103,26 +119,75 @@ public class EventosController {
 			return new ResponseEntity<List<Evento>>(HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
+	
+	/**
+	 * Endpoint que nos devuelve todos los eventos que hay en la localidad que pasemos como parámetro
+	 * (Recorremos con findAll() todos los eventos y añadimos los que cumplen la condición)
+	 * @param eventtownname
+	 * @return * 
+	 */
+	@GetMapping("/city/{eventtownname}")
+	public ResponseEntity<List<Evento>> getTownEvent(@PathVariable String eventtownname) {
+		try {
+			List<Evento> eventos = eventoRepository.findAll();
+			List<Evento> eventosTown = new ArrayList<Evento>();
+			for (Evento evento : eventos) {
+				if (evento.getProperties().getMunicipality().equals(eventtownname)) {
+					eventosTown.add(evento);
+				}
+			}
+			return new ResponseEntity<List<Evento>>(eventosTown, HttpStatus.OK);
+		} catch (Exception e) {
+			e.printStackTrace();
+			return new ResponseEntity<List<Evento>>(HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+	
+	/**
+	 * Lo mismo que el punto anterior pero usando una Query personalizada en el repositorio (findByEventtownname)
+	 * 
+	 * @param eventtownname
+	 * @return
+	 */
+	@GetMapping("/town/{eventtownname}")
+	public ResponseEntity<List<Evento>> showByEventTownName(@PathVariable("eventtownname") String eventtownname) {
+		try {
+			List<Evento> eventosTown = eventoRepository.findByEventtownname(eventtownname);
+			return new ResponseEntity<List<Evento>>(eventosTown,HttpStatus.OK);
+		}catch (Exception e) {
+			e.printStackTrace();
+			return new ResponseEntity<List<Evento>>(HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
 
-	@GetMapping("/random")
+	/**
+	 * Endpoint que nos devuelve un evento aleatorio entre el total de eventos
+	 * 
+	 * @return
+	 */
+	@GetMapping("/random") 
 	public ResponseEntity<Evento> getRandomEvent() {
 		try {
 			List<Evento> eventos = eventoRepository.findAll();
-
-			// Generar un número aleatorio entre 0 y la cantidad de eventos menos uno
+			// Generamos un número aleatorio entre 0 y la cantidad de eventos menos uno
 			Random random = new Random();
 			int indiceAleatorio = random.nextInt(eventos.size());
-
-			// Acceder al elemento correspondiente a ese indice
+			// Accedemos al elemento correspondiente a ese indice
 			Evento eventoAleatorio = eventos.get(indiceAleatorio);
-			// Devolver evento aleatorio
+			// Devolvemos un evento aleatorio
 			return new ResponseEntity<Evento>(eventoAleatorio, HttpStatus.OK);
+			
 		} catch (Exception e) {
 			e.printStackTrace();
 			return new ResponseEntity<Evento>(HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
 
+	/**
+	 * Endpoint que nos devuelve un evento aleatorio gratuito cualquiera
+	 * 
+	 * @return
+	 */
 	@GetMapping("/randomfree")
 	public ResponseEntity<Evento> getRandomFreeEvent() {
 		try {
@@ -137,14 +202,9 @@ public class EventosController {
 					eventosGratis.add(evento);
 				}
 			}
-
-			// Generar un número aleatorio entre 0 y la cantidad de eventos menos uno
 			Random random = new Random();
 			int indiceAleatorio = random.nextInt(eventosGratis.size());
-
-			// Acceder al elemento correspondiente a ese indice
 			Evento eventoAleatorio = eventosGratis.get(indiceAleatorio);
-			// Devolver evento aleatorio
 			return new ResponseEntity<Evento>(eventoAleatorio, HttpStatus.OK);
 		} catch (Exception e) {
 			e.printStackTrace();
