@@ -14,6 +14,6 @@ public interface EventoRepository extends MongoRepository<Evento, String>{
 	
 	//Query personalizada que busque en enttownname el nombre de string que pasemos sin importar mayus-minus
 	@Query("{ 'properties.eventtownname' : { $regex: ?0, $options: 'i' } }")
-	List<Evento> findByEventtownname(String eventtownname);
+	List<Evento> findByEventTownName(String eventtownname);
 	
 }

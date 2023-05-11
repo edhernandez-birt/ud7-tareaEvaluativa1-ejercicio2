@@ -69,6 +69,31 @@ public class EventosController {
 			return new ResponseEntity<List<String>>(HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
+	
+	/**
+	 * Endpoint que nos proprciona las localidades en las que hay eventos
+	 * 
+	 * @return
+	 */
+	@GetMapping("/localidades")
+	public ResponseEntity<List<String>> getAllCities() {
+		try {
+			List<Evento> eventos = eventoRepository.findAll();
+			Set<String> uniqueCities = new HashSet<>();
+			for (Evento evento : eventos) {
+				// Hay que controlar que no sea null
+				if (evento.getProperties().getEventtownname() != null) {
+					uniqueCities.add(evento.getProperties().getEventtownname());
+				}
+			}
+			List<String> sortedCities = new ArrayList<>(uniqueCities);
+			Collections.sort(sortedCities);
+			return new ResponseEntity<List<String>>(sortedCities, HttpStatus.OK);
+		} catch (Exception e) {
+			e.printStackTrace();
+			return new ResponseEntity<List<String>>(HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
 
 	/**
 	 * Endpoint que nos proporciona todos los tipos de eventos que hay
@@ -93,7 +118,7 @@ public class EventosController {
 	}
 
 	/**
-	 * Endpoint que nos proporciona la lista de evento que hay en Ermua
+	 * Endpoint que nos proporciona la lista de eventos que hay en Ermua
 	 * 
 	 * @return
 	 */
@@ -152,7 +177,7 @@ public class EventosController {
 	@GetMapping("/town/{eventtownname}")
 	public ResponseEntity<List<Evento>> showByEventTownName(@PathVariable("eventtownname") String eventtownname) {
 		try {
-			List<Evento> eventosTown = eventoRepository.findByEventtownname(eventtownname);
+			List<Evento> eventosTown = eventoRepository.findByEventTownName(eventtownname);
 			return new ResponseEntity<List<Evento>>(eventosTown,HttpStatus.OK);
 		}catch (Exception e) {
 			e.printStackTrace();
